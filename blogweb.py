@@ -76,10 +76,6 @@ class Userinfo(db.Model):
     password = db.StringProperty(required = True) #not regular password but hash of the password
     email = db.EmailProperty()
 
-    def render(self):
-        self._render_text = self.email.replace('\n', '<br>')
-        return render_str("post.html", p = self)
-
     # if you want to work on above created class instead of creating instances, we can use this method
     # @classmethod is called decorator
     @classmethod
@@ -109,6 +105,7 @@ def blog_key(name = 'default'):
     return db.Key.from_path('blogs', name)
 
 class Post(db.Model):
+    userid = db.IntegerProperty(required=True)
     subject = db.StringProperty(required = True)
     content = db.TextProperty(required = True)
     created = db.DateTimeProperty(auto_now_add = True)
@@ -116,7 +113,12 @@ class Post(db.Model):
 
     def render(self):
         self._render_text = self.content.replace('\n', '<br>')
-        return render_str("post.html", p = self)
+        return self._render_text
+        #return render_str("post.html", p = self)
+
+    def getUName(self):
+        user = Userinfo.by_id(self.userid)
+        return user.username
 
 
 class Handler(webapp2.RequestHandler):
@@ -143,6 +145,13 @@ class Handler(webapp2.RequestHandler):
 
     def logout(self):
         self.response.headers.add_header('Set-Cookie', 'user_id=; path=/')
+
+## This methods gets executed for each page and
+# verfies user login status, using oookie information.
+    def initialize(self, *a, **kw):
+        webapp2.RequestHandler.initialize(self, *a, **kw)
+        uid = self.reading_cookies('user_id')
+        self.user = uid and Userinfo.by_id(int(uid))
 
 
 class SignUp(Handler):
@@ -186,7 +195,7 @@ class SignUp(Handler):
                 uinfo.put()
 
                 self.login(uinfo)
-                self.render("profile.html",username=username)
+                self.render('profile.html',username=username)
 
 
 class Front(Handler):
@@ -209,14 +218,14 @@ class LogIn(Handler):
             if i.username == username:
                 h = i.password
                 if valid_pw(username, password, h):
-                    return self.render("profile.html",username=username)
+                    return self.render('profile.html', username = username)
                 else:
-                    return self.render("login.html",error_password="password is wrong")
+                    return self.render('login.html',error_password="password is wrong")
             else:
                 u_value=1
 
         if u_value==1:
-            self.render("login.html",error_username="username does not exist")
+            self.render('login.html',error_username="username does not exist")
 
 
 class LogOut(Handler):
@@ -228,7 +237,7 @@ class LogOut(Handler):
 class Welcome(Handler):
     def get(self):
         #username =
-        user_id = self.reading_cookies('user_id')
+        user_id = user_id=self.user.key().id()
         user_name = user_id and Userinfo.by_id(int(user_id))
         if user_name:
             self.render("profile.html",username=user_id)
@@ -253,14 +262,17 @@ class PostPage(Handler):
 
 class NewPost(Handler):
     def get(self):
-        self.render("blognew.html")
+        if self.user:
+            self.render('blognew.html')
+        else:
+            self.render('login.html')
 
     def post(self):
         subject = self.request.get('subject')
         content = self.request.get('content')
 
         if subject and content:
-            p = Post(parent = blog_key(), subject = subject, content = content)
+            p = Post(parent = blog_key(), userid=self.user.key().id(), subject = subject, content = content)
             p.put()
             self.redirect('/blog/%s' % str(p.key().id()))
         else:
@@ -272,7 +284,7 @@ app = webapp2.WSGIApplication([('/?', Front),
                                ('/signup', SignUp),
                                ('/login', LogIn),
                                ('/logout', LogOut),
-                               ('/welcome',Welcome),
+                               ('/welcome/?',Welcome),
                                ('/blog/?', BlogFront),
                                ('/blog/([0-9]+)', PostPage),
                                ('/blog/newpost', NewPost),],

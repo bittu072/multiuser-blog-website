@@ -1,1 +1,11 @@
-{% extends "base.html" %} {% block content %} {{post.render() | safe}} {% endblock %}
+{% extends "base.html" %} {% block content %}
+<br>
+<br>
+<div><b><u>{{post.subject}}</b></u>
+</div>
+
+<div> (Posted on {{post.created.strftime("%b %d, %Y")}} by {{post.getUName()}})
+</div>
+<br>
+<div>{{post.render() | safe}}{% endblock %}
+</div>
