@@ -1,0 +1,10 @@
+{% extends "base.html" %} {% block content %}
+
+
+<h1> Welcome, {{username}}
+
+<a href="/logout"> <button>LogOut</button></a>
+<a href="/blog"> <button>Blog list</button></a>
+<a href="/blog/newpost"> <button>Create Blog</button></a>
+
+{% endblock %}
