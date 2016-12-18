@@ -32,7 +32,7 @@ def valid_email(email):
     return not email or EMAIL_RE.match(email)
 
 
-SECRET_key = open("/home/bittu/Documents/github/multiuserblog/key")
+SECRET_key = open("/home/bittu/Documents/github/multiuserblog/key/key.txt")
 SECRET = SECRET_key.read().split()[0]
 def hash_str(s):
     return hmac.new(SECRET, s).hexdigest()
