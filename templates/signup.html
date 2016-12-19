@@ -1,35 +1,31 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %} {% block header %}
+<a href="/login"><button class="dropbtn button-txt">LogIn</button> </a>{% endblock %} {% block content %}
 
-<form method="post">
-    <h2>Sign Up</h2>
+<form method="post" class="form-signin">
+    <h2 class="signup-wrapper">Sign Up</h2>
     <br>
-    <label><h4>username
-    <input type="text" name="username" value="{{username}}" >
-    </label>
-    <div style="color:red">{{error_username}}</div>
-    <br>
-    <br>
-    <label>password
-    <input type="password" name="password" value="{{password}}" >
-    </label>
-    <div style="color:red">{{error_password}}</div>
-    <br>
-    <br>
-    <label>verify password
-    <input type="password" name="verify" value="{{verify}}" >
-    </label>
-    <div style="color:red">{{error_verify}}</div>
-    <br>
-    <br>
-    <label>email
-    <input type="email" name="email" value="{{email}}" >
-    </label>
-    <div style="color:red">{{error_email}}</div>
+    <h4>
+        <div class="signup-wrapper">
+        <input type="text" name="username" value="{{username}}" placeholder="Username">
+        <div style="color:red">{{error_username}}</div>
+        <br>
+        <input type="password" name="password" value="{{password}}" placeholder="Password">
+        <div style="color:red">{{error_password}}</div>
+        <br>
+        <input type="password" name="verify" value="{{verify}}" placeholder="Verify password">
+        <div style="color:red">{{error_verify}}</div>
+        <br>
+        <input type="email" name="email" value="{{email}}" placeholder="Email">
+        <div style="color:red">{{error_email}}</div>
+
+        <br>
+        <div style="color:red">{{error}}</div>
+    </div>
+    </h4>
     <br>
     <br>
-    <div style="color:red">{{error}}</div>
-    <br>
-    <br>
-    <input type="submit">
+    <div class="signup-button signup-wrapper">
+        <input type="submit">
+    </div>
 </form>
 {% endblock %}

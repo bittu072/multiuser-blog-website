@@ -1,20 +1,31 @@
-{% extends "base.html" %} {% block content %}
+{% extends "base.html" %} {% block header %}
+<a href="/signup"><button class="dropbtn button-txt">SignUp</button> </a>{% endblock %} {% block content %}
 
 <form method="post">
     <h2>Log In</h2>
     <br>
-    <label><h4>username
-    <input type="text" name="username" value="{{username}}" >
-    </label>
-    <div style="color:red">{{error_username}}</div>
-    <br>
-    <br>
-    <label>password
-    <input type="password" name="password" value="{{password}}" >
-    </label>
-    <div style="color:red">{{error_password}}</div>
-    <br>
-    <br>
-    <input type="submit">
+    <h4>
+        <div class="row login-bar ">
+            <div class="col-md-4 login-bar-style">
+                <div>
+                    <input type="text" name="username" value="{{username}}" placeholder="Username">
+                </div>
+                <div style="color:red">{{error_username}}</div>
+            </div>
+
+            <div class="col-md-4 login-bar-style">
+                <div>
+                    <input type="password" name="password" value="{{password}}" placeholder="Password">
+                    <div style="color:red">{{error_password}}</div>
+                </div>
+            </div>
+            <br>
+            <br>
+            <div class="col-md-4 logi-button login-bar-style">
+                <input type="submit">
+            </div>
+        </div>
+    </h4>
 </form>
+
 {% endblock %}

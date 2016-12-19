@@ -1,6 +1,10 @@
-{% extends "base.html" %} {% block content %}
-<div>
-    <a href="/logout"> <button>LogOut</button></a>
-    <a href="/blog"> <button>Blog list</button></a>
-    <a href="/blog/newpost"> <button>Create Blog</button></a>
-</div>{% block body %} {% endblock %} {% endblock %}
+{% extends "base.html" %} {% block header %}
+<div class="dropdown">
+    <button class="dropbtn button-txt">Menu</button>
+    <div class="dropdown-content">
+        <a href="/blog" style="text-decoration:none">lost in blogs</a>
+        <a href="/blog/newpost" style="text-decoration:none">Create post</a>
+        <a href="/logout" style="text-decoration:none">Logout</a>
+    </div>
+</div>
+{% endblock %} {% block content %} {% block body %} {% endblock %} {% endblock %}

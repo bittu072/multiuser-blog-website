@@ -74,7 +74,7 @@ def render_str(template, **params):
 class Userinfo(db.Model):
     username = db.StringProperty(required = True)
     password = db.StringProperty(required = True) # not regular password but hash of the password
-    email = db.EmailProperty()
+    email = db.StringProperty()
 
     # if you want to work on above created class instead of creating instances, we can use this method
     # @classmethod is called decorator
@@ -242,14 +242,16 @@ class BlogFront(Handler):
 
 class PostPage(Handler):
     def get(self, post_id):
-        key = db.Key.from_path('Post', int(post_id), parent=blog_key())
-        post = db.get(key)
+        if self.user:
+            key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+            post = db.get(key)
 
-        if not post:
-            self.error(404)
-            return
-
-        self.render("blogpage.html", post = post)
+            if not post:
+                self.error(404)
+                return
+            self.render("blogpage.html", post = post)
+        else:
+            self.render('login.html')
 
 class NewPost(Handler):
     def get(self):
