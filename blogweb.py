@@ -73,7 +73,7 @@ def render_str(template, **params):
 
 class Userinfo(db.Model):
     username = db.StringProperty(required = True)
-    password = db.StringProperty(required = True) #not regular password but hash of the password
+    password = db.StringProperty(required = True) # not regular password but hash of the password
     email = db.EmailProperty()
 
     # if you want to work on above created class instead of creating instances, we can use this method
@@ -98,7 +98,7 @@ class Userinfo(db.Model):
     @classmethod
     def login(cls, username, password):
         u = cls.by_name(username)
-        if u and valid_pw(username, password, u):
+        if u and valid_pw(username, password, u.password):
             return u
 
 def blog_key(name = 'default'):
@@ -114,7 +114,7 @@ class Post(db.Model):
     def render(self):
         self._render_text = self.content.replace('\n', '<br>')
         return self._render_text
-        #return render_str("post.html", p = self)
+        # return render_str("post.html", p = self)
 
     def getUName(self):
         user = Userinfo.by_id(self.userid)
@@ -210,34 +210,25 @@ class LogIn(Handler):
     def post(self):
         username = self.request.get('username')
         password = self.request.get('password')
-        data = db.GqlQuery("select * from Userinfo")
 
-        for i in data:
-            pass_val=0
-            u_value=0
-            if i.username == username:
-                h = i.password
-                if valid_pw(username, password, h):
-                    return self.render('profile.html', username = username)
-                else:
-                    return self.render('login.html',error_password="password is wrong")
-            else:
-                u_value=1
-
-        if u_value==1:
+        u=Userinfo.login(username, password)
+        if u:
+            self.login(u)
+            self.redirect('/blog')
+        else:
             self.render('login.html',error_username="username does not exist")
 
 
 class LogOut(Handler):
     def get(self):
         self.logout()
-        self.redirect('/signup')
+        self.redirect('/login')
 
 
-class Welcome(Handler):
+class Profile(Handler):
     def get(self):
         #username =
-        user_id = user_id=self.user.key().id()
+        user_id = self.user.key().id()
         user_name = user_id and Userinfo.by_id(int(user_id))
         if user_name:
             self.render("profile.html",username=user_id)
@@ -284,7 +275,7 @@ app = webapp2.WSGIApplication([('/?', Front),
                                ('/signup', SignUp),
                                ('/login', LogIn),
                                ('/logout', LogOut),
-                               ('/welcome/?',Welcome),
+                               ('/profile/?',Profile),
                                ('/blog/?', BlogFront),
                                ('/blog/([0-9]+)', PostPage),
                                ('/blog/newpost', NewPost),],

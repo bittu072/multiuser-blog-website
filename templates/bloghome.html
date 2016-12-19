@@ -1,2 +1,7 @@
-{% extends "base.html" %} {% block content %} {% for p in posts %} {{p.subject}}<br>{{ p.render() | safe }}
-<br><br> {% endfor %} {% endblock %}
+{% extends "base2.html" %} {% block body %}
+<div>Welcome to the world of blog
+</div>
+
+<div>{% for p in posts %} <a href="/blog/{{p.key().id()}}#">{{p.subject}}</a><br>{{ p.render() | safe }} by {{p.getUName()}}
+    <br><br> {% endfor %}
+</div> {% endblock %}
