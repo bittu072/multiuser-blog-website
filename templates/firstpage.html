@@ -1,12 +1,28 @@
-{% extends "base.html" %} {% block content %}
-<hr>
-<hr>
-<h1> Welcome to my website </h1>
-<hr>
-<hr>
+{% extends "base.html" %} {% block header %}
+<button class="dropbtn button-txt">Welcome</button> </a>{% endblock %} {% block content %}
 
 <br>
 <br>
-<a href="/signup"> <button>SignUp</button></a>
-<a href="/login"> <button>LogIn</button></a>
+<br>
+<br>
+<br>
+<div class="row">
+    <div class="col-md-2">
+    </div>
+    <div class="col-md-4 login-bar-style login-bar text-center">
+        <div>
+            <a href="/signup"> <button class="dropbtn button-txt logi-button"> SignUp </button></a>
+        </div>
+    </div>
+
+    <div class="col-md-4 login-bar-style login-bar text-center">
+        <div>
+            <a href="/login"> <button class="dropbtn button-txt logi-button">LogIn</button></a>
+        </div>
+    </div>
+    <div class="col-md-2">
+    </div>
+</div>
+
+
 {% endblock %}

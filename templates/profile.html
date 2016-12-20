@@ -1,10 +1,33 @@
 {% extends "base2.html" %} {% block body %}
 
 
-<h1> Welcome, {{username}}
+<h1 class="text-center"> Welcome, {{username}}
+</h1>
+<br>
+<br>
+<br>
 
-<a href="/logout"> <button>LogOut</button></a>
-<a href="/blog"> <button>Blog list</button></a>
-<a href="/blog/newpost"> <button>Create Blog</button></a>
+
+<div class="row">
+
+    <div class="col-md-4 login-bar-style login-bar text-center">
+        <div>
+            <a href="/blog"> <button class="dropbtn button-txt logi-button"> Blog list </button></a>
+        </div>
+    </div>
+
+    <div class="col-md-4 login-bar-style login-bar text-center">
+        <div>
+            <a href="/blog/newpost"> <button class="dropbtn button-txt logi-button">Create Blog</button></a>
+        </div>
+    </div>
+
+    <div class="col-md-4 login-bar-style login-bar text-center">
+        <div>
+            <a href="/logout"> <button class="dropbtn button-txt logi-button">LogOut</button></a>
+        </div>
+    </div>
+
+</div>
 
 {% endblock %}

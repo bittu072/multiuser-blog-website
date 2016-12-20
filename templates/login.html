@@ -2,27 +2,28 @@
 <a href="/signup"><button class="dropbtn button-txt">SignUp</button> </a>{% endblock %} {% block content %}
 
 <form method="post">
-    <h2>Log In</h2>
+    <br>
+    <br>
+    <br>
+    <br>
     <br>
     <h4>
-        <div class="row login-bar ">
-            <div class="col-md-4 login-bar-style">
-                <div>
-                    <input type="text" name="username" value="{{username}}" placeholder="Username">
-                </div>
-                <div style="color:red">{{error_username}}</div>
+        <div class="form-signin signup-wrapper">
+            <div>
+                <h2>Log In</h2>
             </div>
-
-            <div class="col-md-4 login-bar-style">
-                <div>
-                    <input type="password" name="password" value="{{password}}" placeholder="Password">
-                    <div style="color:red">{{error_password}}</div>
-                </div>
+            <div>
+                <input type="text" name="username" value="{{username}}" placeholder="Username">
+            </div>
+            <div style="color:red">{{error_username}}</div>
+            <div>
+                <input type="password" name="password" value="{{password}}" placeholder="Password">
+                <div style="color:red">{{error_password}}</div>
             </div>
             <br>
             <br>
-            <div class="col-md-4 logi-button login-bar-style">
-                <input type="submit">
+            <div class="signup-button signup-wrapper">
+                <input type="submit" class="dropbtn button-txt">
             </div>
         </div>
     </h4>

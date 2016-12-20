@@ -1,7 +1,22 @@
 {% extends "base2.html" %} {% block body %}
-<div>Welcome to the world of blog
+<div class="text-center">
+    <h3><b>Welcome to the world of blog</b></h3>
 </div>
 
-<div>{% for p in posts %} <a href="/blog/{{p.key().id()}}#">{{p.subject}}</a><br>{{ p.render() | safe }} by {{p.getUName()}}
-    <br><br> {% endfor %}
+
+<div class="container center">
+    <div class="blog-container">{% for p in posts %}
+        <div class="row">
+            <div class="col-md-7">
+                <h3>
+                    <a href="/blog/{{p.key().id()}}#" style="text-decoration:none">{{p.subject}}</a>
+                </h3>
+            </div>
+        </div>
+        <div> (Posted by {{p.getUName()}})
+        </div>
+
+        <p>{{ p.render() | safe }}</p>
+        <br><br> {% endfor %}
+    </div>
 </div> {% endblock %}

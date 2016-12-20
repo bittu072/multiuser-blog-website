@@ -1,11 +1,20 @@
 {% extends "base2.html" %} {% block body %}
-<br>
-<br>
-<div><b><u>{{post.subject}}</b></u>
-</div>
 
-<div> (Posted on {{post.created.strftime("%b %d, %Y")}} by {{post.getUName()}})
-</div>
-<br>
-<div>{{post.render() | safe}}{% endblock %}
+<div class="container center">
+    <div class="blog-container">
+        <br>
+        <br>
+        <div>
+            <h1>
+                <b><u>{{post.subject}}</b></u>
+            </h1>
+        </div>
+
+        <div> (Posted on {{post.created.strftime("%b %d, %Y")}} by {{post.getUName()}})
+        </div>
+        <br>
+        <div>
+            <h3>{{post.render() | safe}}{% endblock %}</h3>
+        </div>
+    </div>
 </div>

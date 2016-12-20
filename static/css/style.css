@@ -22,11 +22,6 @@ body {
     background-color: #2e3033;
 }
 
-.left-header {
-    position: 50px;
-    font-size: 150px;
-}
-
 h2 {
     font-size: 24px;
     font-weight: bold;
@@ -38,9 +33,7 @@ h2 {
     color: #8c8c8c;
 }
 
-.error {
-    color: red;
-}
+
 
 .heady {
     display: flex;
@@ -92,11 +85,13 @@ h2 {
     max-width: 300px;
     padding: 15px;
     margin: 0 auto;
+    background-color: #2e3033;
+    color: #969494;
 }
 
 .login-bar {
-    display: flex;
-    background-color: #4c4c4c;
+
+    background-color: #2e3033;
     height: 100px;
     color: #969494;
 }
@@ -106,8 +101,7 @@ h2 {
 }
 
 .logi-button {
-    display: flex;
-    float: right;
+    margin-top: 8.5%;
 }
 
 .signup-wrapper {

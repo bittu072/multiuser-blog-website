@@ -1,31 +1,37 @@
 {% extends "base.html" %} {% block header %}
 <a href="/login"><button class="dropbtn button-txt">LogIn</button> </a>{% endblock %} {% block content %}
 
+<br>
+<br>
+<br>
 <form method="post" class="form-signin">
-    <h2 class="signup-wrapper">Sign Up</h2>
-    <br>
-    <h4>
-        <div class="signup-wrapper">
-        <input type="text" name="username" value="{{username}}" placeholder="Username">
-        <div style="color:red">{{error_username}}</div>
+    <div class="signup-wrapper">
+        <h2>Sign Up</h2>
         <br>
-        <input type="password" name="password" value="{{password}}" placeholder="Password">
-        <div style="color:red">{{error_password}}</div>
-        <br>
-        <input type="password" name="verify" value="{{verify}}" placeholder="Verify password">
-        <div style="color:red">{{error_verify}}</div>
-        <br>
-        <input type="email" name="email" value="{{email}}" placeholder="Email">
-        <div style="color:red">{{error_email}}</div>
+        <h4>
+        <div>
+            <input type="text" name="username" value="{{username}}" placeholder="Username">
+            <div style="color:red">{{error_username}}</div>
+            <br>
+            <input type="password" name="password" value="{{password}}" placeholder="Password">
+            <div style="color:red">{{error_password}}</div>
+            <br>
+            <input type="password" name="verify" value="{{verify}}" placeholder="Verify password">
+            <div style="color:red">{{error_verify}}</div>
+            <br>
+            <input type="email" name="email" value="{{email}}" placeholder="Email">
+            <div style="color:red">{{error_email}}</div>
 
-        <br>
-        <div style="color:red">{{error}}</div>
+            <br>
+            <div style="color:red">{{error}}</div>
+        </div>
     </div>
     </h4>
-    <br>
-    <br>
-    <div class="signup-button signup-wrapper">
-        <input type="submit">
+        <br>
+        <br>
+        <div class="signup-button signup-wrapper">
+            <input type="submit" class="dropbtn button-txt">
+        </div>
     </div>
 </form>
 {% endblock %}
