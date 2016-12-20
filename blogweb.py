@@ -237,7 +237,15 @@ class Profile(Handler):
 
 class BlogFront(Handler):
     def get(self):
-        posts = db.GqlQuery("select * from Post order by created desc limit 10")
+        if self.user:
+            posts = db.GqlQuery("select * from Post order by created desc limit 10")
+            self.render('bloghome.html', posts = posts)
+        else:
+            self.redirect('/login')
+
+class BlogAll(Handler):
+    def get(self):
+        posts = db.GqlQuery("select * from Post order by created desc")
         self.render('bloghome.html', posts = posts)
 
 class PostPage(Handler):
@@ -251,14 +259,14 @@ class PostPage(Handler):
                 return
             self.render("blogpage.html", post = post)
         else:
-            self.render('login.html')
+            self.redirect('/login')
 
 class NewPost(Handler):
     def get(self):
         if self.user:
             self.render('blognew.html')
         else:
-            self.render('login.html')
+            self.redirect('/login')
 
     def post(self):
         subject = self.request.get('subject')
@@ -279,6 +287,7 @@ app = webapp2.WSGIApplication([('/?', Front),
                                ('/logout', LogOut),
                                ('/profile/?',Profile),
                                ('/blog/?', BlogFront),
+                               ('/blogall', BlogAll),
                                ('/blog/([0-9]+)', PostPage),
                                ('/blog/newpost', NewPost),],
                               debug=True)
