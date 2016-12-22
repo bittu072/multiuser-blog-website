@@ -120,6 +120,10 @@ class Post(db.Model):
         user = Userinfo.by_id(self.userid)
         return user.username
 
+    def gettitlename(self):
+        pinfo = Post.by_id(self.post_id)
+        return pinfo.subject
+
 
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
@@ -239,7 +243,8 @@ class BlogFront(Handler):
     def get(self):
         if self.user:
             posts = db.GqlQuery("select * from Post order by created desc limit 10")
-            self.render('bloghome.html', posts = posts)
+            deledtedpost_id = self.request.get('deledtedpost_id')
+            self.render('bloghome.html', posts = posts, deleted_id=deledtedpost_id)
         else:
             self.redirect('/login')
 
@@ -280,6 +285,20 @@ class NewPost(Handler):
             error = "subject and content, please!"
             self.render("blognew.html", subject=subject, content=content, error=error)
 
+class DeletePost(Handler):
+    def get(self, post_id):
+        if self.user:
+            key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+            post = db.get(key)
+            if post.userid == self.user.key().id():
+                post.delete()
+                self.redirect("/blog/?deledtedpost_id="+ post_id)
+            else:
+                self.redirect("/blog/" + post_id + "?error=You don't have " +
+                              "access to delete this record.")
+        else:
+            self.redirect("/login?error=You need to be logged, in order" +
+                          " to delete your post!!")
 
 app = webapp2.WSGIApplication([('/?', Front),
                                ('/signup', SignUp),
@@ -289,7 +308,8 @@ app = webapp2.WSGIApplication([('/?', Front),
                                ('/blog/?', BlogFront),
                                ('/blogall', BlogAll),
                                ('/blog/([0-9]+)', PostPage),
-                               ('/blog/newpost', NewPost),],
+                               ('/blog/newpost', NewPost),
+                               ('/blog/deletepost/([0-9]+)', DeletePost),],
                               debug=True)
 
 

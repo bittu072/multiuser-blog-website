@@ -3,7 +3,10 @@
     <h3><b>Welcome to the world of blog</b></h3>
 </div>
 
-
+<div class="text-center" role="alert">{% if deleted_id %}
+    <span class="glyphicon glyphicon-success" aria-hidden="true"></span> post has been deleted {% endif %}
+</div>
+<hr>
 <div class="container center">
     <div class="blog-container">{% for p in posts %}
         <div class="row">

@@ -4,17 +4,38 @@
     <div class="blog-container">
         <br>
         <br>
-        <div>
-            <h1>
-                <b><u>{{post.subject}}</b></u>
-            </h1>
+        <div class="row">
+            <div class="col-md-6">
+                <div>
+                    <h1>
+                        <b>{{post.subject}}</b>
+                    </h1>
+                </div>
+            </div>
+            <div class="col-md-6  edit-button-margin text-right">
+                <div class="dropdown">
+                    <button class="edit-button button-txt">	&#9998;</button>
+                    <div class="dropdown-content">
+                        <a href="/blog/deletepost/{{post.key().id()}}" style="text-decoration:none ">Delete Post</a>
+                        <a href="#" style="text-decoration:none ">Edit Post</a>
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div> (Posted on {{post.created.strftime("%b %d, %Y")}} by {{post.getUName()}})
+        <div> (Posted on {{post.created.strftime("%b %d, %Y ")}} by {{post.getUName()}})
         </div>
+        <hr>
         <br>
         <div>
             <h3>{{post.render() | safe}}{% endblock %}</h3>
         </div>
+    </div>
+    <div class="btn-group " role="group " aria-label="... ">
+        <button type="button " class="btn btn-default ">Middle</button>
+        <button type="button " class="btn btn-default ">Right</button>
+        <button type="button " class="dropbtn button-txt ">
+            <a id="post-delete "  href="/blog/deletepost/{{post.key().id()}} ">Delete</a>
+        </button>
+
     </div>
 </div>

@@ -29,6 +29,13 @@ h2 {
     color: #565555;
 }
 
+input
+{
+    -moz-border-radius: 5px;
+    border-radius: 5px;
+    padding:5px;
+}
+
 .main-text {
     color: #8c8c8c;
 }
