@@ -27,15 +27,41 @@
         <hr>
         <br>
         <div>
-            <h3>{{post.render() | safe}}{% endblock %}</h3>
+            <h3>{{post.render() | safe}}</h3>
         </div>
-    </div>
-    <div class="btn-group " role="group " aria-label="... ">
-        <button type="button " class="btn btn-default ">Middle</button>
-        <button type="button " class="btn btn-default ">Right</button>
-        <button type="button " class="dropbtn button-txt ">
-            <a id="post-delete "  href="/blog/deletepost/{{post.key().id()}} ">Delete</a>
-        </button>
+        <div>
+            <h3>
+            <label for="comment">Comment:</label>
+        </h3>
+        </div>
+        <div class="row">
+            <form method="post" role="form">
+                <div class="col-md-10">
+                    <input type="text" class="input-comment" name="comment" value="{{comment}}">
+                </div>
+                <div class="col-md-2">
+                    <button type="submit" class="btn btn-success">Submit</button>
+                </div>
+            </form>
+        </div>
+
+        <div class="row">
+            {% for c in comments %}
+            <br>
+            <hr>
+            <blockquote>
+                <div class="col-md-9">
+                    <p>{{ c.comment }}</p>
+                    <footer>{{ c.getUName() }}</footer>
+                </div>
+                <div class="col-md-3">
+                    <a href="/blog/deletecomment/{{post.key().id()}}/{{c.key().id()}}">Delete</a>
+                    <a href="/blog/editcomment/{{post.key().id()}}/{{c.key().id()}}">Edit</a>
+                </div>
+            </blockquote>{% endfor %}
+        </div>
 
     </div>
+
 </div>
+{% endblock %}

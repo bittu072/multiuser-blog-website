@@ -121,9 +121,16 @@ class Post(db.Model):
         user = Userinfo.by_id(self.userid)
         return user.username
 
-    def gettitlename(self):
-        pinfo = Post.by_id(self.post_id)
-        return pinfo.subject
+class Comment(db.Model):
+    userid = db.IntegerProperty(required=True)
+    postid = db.IntegerProperty(required=True)
+    comment = db.TextProperty(required=True)
+    created = db.DateTimeProperty(auto_now_add=True)
+    last_modified = db.DateTimeProperty(auto_now=True)
+
+    def getUName(self):
+        user = Userinfo.by_id(self.userid)
+        return user.username
 
 
 class Handler(webapp2.RequestHandler):
@@ -259,13 +266,58 @@ class PostPage(Handler):
         if self.user:
             key = db.Key.from_path('Post', int(post_id), parent=blog_key())
             post = db.get(key)
-
+            comments = db.GqlQuery("select * from Comment where post_id = " +
+                               post_id + " order by created desc")
             if not post:
                 self.error(404)
                 return
-            self.render("blogpage.html", post = post)
+            self.render("blogpage.html", post = post, comments=comments)
         else:
             self.redirect('/login')
+
+    def post(self, post_id):
+        key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+        post = db.get(key)
+
+        if not post:
+            self.error(404)
+            return
+
+        if(self.user):
+            # On clicking like, post-like value increases.
+            # if(self.request.get('like') and
+            #    self.request.get('like') == "update"):
+            #     likes = db.GqlQuery("select * from Like where post_id = " +
+            #                         post_id + " and userid = " +
+            #                         str(self.user.key().id()))
+            #
+            #     if self.user.key().id() == post.user_id:
+            #         self.redirect("/blog/" + post_id +
+            #                       "?error=You cannot like your " +
+            #                       "post.!!")
+            #         return
+            #     elif likes.count() == 0:
+            #         l = Like(parent=blog_key(), userid=self.user.key().id(),
+            #                  post_id=int(post_id))
+            #         l.put()
+
+            # On commenting, it creates new comment tuple
+            if(self.request.get('comment')):
+                comment=self.request.get('comment')
+                c = Comment(parent=blog_key(), userid=self.user.key().id(),
+                            postid=int(post_id),
+                            comment=comment)
+                c.put()
+                # likes = db.GqlQuery("select * from Like where post_id="+post_id)
+                comments = db.GqlQuery("select * from Comment where postid="+ post_id + "order by created desc")
+
+                self.render("blogpage.html", post=post, comments=comments)
+            else:
+                    self.redirect("/login?error=You need to login before " +
+                          "performing edit, like or commenting.!!")
+                    return
+
+
 
 class NewPost(Handler):
     def get(self):
@@ -335,6 +387,59 @@ class EditPost(Handler):
             self.render("editpost.html", subject=subject,
                         content=content, error=error)
 
+
+class DeleteComment(Handler):
+    def get(self, post_id, comment_id):
+        if self.user:
+            key = db.Key.from_path('Comment', int(comment_id),
+                                   parent=blog_key())
+            c = db.get(key)
+            if c.userid == self.user.key().id():
+                c.delete()
+                self.redirect("/blog/"+post_id+"?deleted_comment_id=" +
+                              comment_id)
+            else:
+                self.redirect("/blog/" + post_id + "?error=You don't have " +
+                              "access to delete this comment.")
+        else:
+            self.redirect("/login?error=You need to be logged, in order to " +
+                          "delete your comment!!")
+
+
+class EditComment(Handler):
+    def get(self, post_id, comment_id):
+        if self.user:
+            key = db.Key.from_path('Comment', int(commentid),
+                                   parent=blog_key())
+            c = db.get(key)
+            if c.userid == self.user.key().id():
+                self.render("blogpage.html", comment=c.comment)
+            else:
+                self.redirect("/blog/" + post_id +
+                              "?error=You don't have access to edit this " +
+                              "comment.")
+        else:
+            self.redirect("/login?error=You need to be logged, in order to" +
+                          " edit your post!!")
+
+    def post(self, post_id, comment_id):
+        if not self.user:
+            self.redirect('/blog')
+
+        comment = self.request.get('comment')
+
+        if comment:
+            key = db.Key.from_path('Comment',
+                                   int(comment_id), parent=blog_key())
+            c = db.get(key)
+            c.comment = comment
+            c.put()
+            self.redirect('/blog/%s' % post_id)
+        else:
+            error = "subject and content, please!"
+            self.render("editpost.html", subject=subject,
+                        content=content, error=error)
+
 app = webapp2.WSGIApplication([('/?', Front),
                                ('/signup', SignUp),
                                ('/login', LogIn),
@@ -345,7 +450,12 @@ app = webapp2.WSGIApplication([('/?', Front),
                                ('/blog/([0-9]+)', PostPage),
                                ('/blog/newpost', NewPost),
                                ('/blog/deletepost/([0-9]+)', DeletePost),
-                               ('/blog/editpost/([0-9]+)', EditPost),],
+                               ('/blog/editpost/([0-9]+)', EditPost),
+                               ('/blog/deletecomme/([0-9]+)/([0-9]+)',
+                                DeleteComment),
+                               ('/blog/editcomme/([0-9]+)/([0-9]+)',
+                                EditComment),
+                               ],
                               debug=True)
 
 
