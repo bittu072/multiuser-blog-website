@@ -32,8 +32,9 @@ def valid_email(email):
     return not email or EMAIL_RE.match(email)
 
 
-SECRET_key = open("/home/bittu/Documents/github/multiuserblog/key/key.txt")
-SECRET = SECRET_key.read().split()[0]
+# SECRET_key = open("/home/bittu/Documents/github/multiuserblog/key/key.txt")
+# SECRET = SECRET_key.read().split()[0]
+SECRET = "thisissecretcode"
 def hash_str(s):
     return hmac.new(SECRET, s).hexdigest()
 
@@ -300,6 +301,40 @@ class DeletePost(Handler):
             self.redirect("/login?error=You need to be logged, in order" +
                           " to delete your post!!")
 
+class EditPost(Handler):
+    def get(self, post_id):
+        if self.user:
+            key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+            post = db.get(key)
+            if post.userid == self.user.key().id():
+                self.render("blogedit.html", subject=post.subject,
+                            content=post.content)
+            else:
+                self.redirect("/blog/" + post_id + "?error=You don't have " +
+                              "access to edit this record.")
+        else:
+            self.redirect("/login?error=You need to be logged, " +
+                          "in order to edit your post!!")
+
+    def post(self, post_id):
+        if not self.user:
+            self.redirect('/blog')
+
+        subject = self.request.get('subject')
+        content = self.request.get('content')
+
+        if subject and content:
+            key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+            post = db.get(key)
+            post.subject = subject
+            post.content = content
+            post.put()
+            self.redirect('/blog/%s' % post_id)
+        else:
+            error = "subject and content, please!"
+            self.render("editpost.html", subject=subject,
+                        content=content, error=error)
+
 app = webapp2.WSGIApplication([('/?', Front),
                                ('/signup', SignUp),
                                ('/login', LogIn),
@@ -309,7 +344,8 @@ app = webapp2.WSGIApplication([('/?', Front),
                                ('/blogall', BlogAll),
                                ('/blog/([0-9]+)', PostPage),
                                ('/blog/newpost', NewPost),
-                               ('/blog/deletepost/([0-9]+)', DeletePost),],
+                               ('/blog/deletepost/([0-9]+)', DeletePost),
+                               ('/blog/editpost/([0-9]+)', EditPost),],
                               debug=True)
 
 

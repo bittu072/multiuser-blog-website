@@ -1,0 +1,29 @@
+{% extends "base2.html" %} {% block body %}
+<br>
+<br>
+<br>
+<div class="container center">
+    <div class="blog-container">
+        <h2 class="blog-form-signin">Editing Post</h2>
+        <form method="post" class="blog-form-signin">
+            <label>
+                <div>Title</div>
+                <input type="text" name="subject" value="{{subject}}" class="input-blog">
+            </label>
+            <br>
+            <br>
+            <label>
+                <div>Content</div>
+                <textarea name="content" class="input-blog text-input-blog">{{content}}</textarea>
+            </label>
+
+            <div class="error">{{error}}</div>
+            <br>
+            <br>
+            <div class="text-right">
+                <input type="submit" class="dropbtn button-txt">
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
