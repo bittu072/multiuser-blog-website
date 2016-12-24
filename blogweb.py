@@ -335,7 +335,7 @@ class NewPost(Handler):
             p.put()
             self.redirect('/blog/%s' % str(p.key().id()))
         else:
-            error = "subject and content, please!"
+            error = "subject & content, both are required!"
             self.render("blognew.html", subject=subject, content=content, error=error)
 
 class DeletePost(Handler):
@@ -383,8 +383,8 @@ class EditPost(Handler):
             post.put()
             self.redirect('/blog/%s' % post_id)
         else:
-            error = "subject and content, please!"
-            self.render("editpost.html", subject=subject,
+            error = "subject & content, both are required!"
+            self.render("blogedit.html", subject=subject,
                         content=content, error=error)
 
 
@@ -409,11 +409,11 @@ class DeleteComment(Handler):
 class EditComment(Handler):
     def get(self, post_id, comment_id):
         if self.user:
-            key = db.Key.from_path('Comment', int(commentid),
+            key = db.Key.from_path('Comment', int(comment_id),
                                    parent=blog_key())
             c = db.get(key)
             if c.userid == self.user.key().id():
-                self.render("blogpage.html", comment=c.comment)
+                self.render("blogedit.html", comment=c.comment)
             else:
                 self.redirect("/blog/" + post_id +
                               "?error=You don't have access to edit this " +
@@ -431,14 +431,13 @@ class EditComment(Handler):
         if comment:
             key = db.Key.from_path('Comment',
                                    int(comment_id), parent=blog_key())
-            c = db.get(key)
-            c.comment = comment
-            c.put()
+            comme = db.get(key)
+            comme.comment = comment
+            comme.put()
             self.redirect('/blog/%s' % post_id)
         else:
-            error = "subject and content, please!"
-            self.render("editpost.html", subject=subject,
-                        content=content, error=error)
+            error = "if you are editing then comment can not be blank!"
+            self.render("blogedit.html", comment=comment, error=error)
 
 app = webapp2.WSGIApplication([('/?', Front),
                                ('/signup', SignUp),

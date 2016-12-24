@@ -6,15 +6,21 @@
     <div class="blog-container">
         <h2 class="blog-form-signin">Editing Post</h2>
         <form method="post" class="blog-form-signin">
+            {% if not comment %}
             <label>
                 <div>Title</div>
                 <input type="text" name="subject" value="{{subject}}" class="input-blog">
             </label>
             <br>
-            <br>
+            <br> {% endif %}
             <label>
-                <div>Content</div>
+                {% if not comment %}
+                <div>Edit your Content</div>
                 <textarea name="content" class="input-blog text-input-blog">{{content}}</textarea>
+                {% else %}
+                <div>Edit your comment</div>
+                <textarea name="comment" class="input-blog text-input-blog">{{comment}}</textarea>
+                {% endif %}
             </label>
 
             <div class="error">{{error}}</div>

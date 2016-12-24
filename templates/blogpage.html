@@ -25,10 +25,12 @@
         <div> (Posted on {{post.created.strftime("%b %d, %Y ")}} by {{post.getUName()}})
         </div>
         <hr>
-        <br>
         <div>
-            <h3>{{post.render() | safe}}</h3>
+            <p>{{post.render() | safe}}</p>
         </div>
+        <br>
+        <hr>
+        <hr>
         <div>
             <h3>
             <label for="comment">Comment:</label>
@@ -55,8 +57,8 @@
                     <footer>{{ c.getUName() }}</footer>
                 </div>
                 <div class="col-md-3">
-                    <a href="/blog/deletecomment/{{post.key().id()}}/{{c.key().id()}}">Delete</a>
-                    <a href="/blog/editcomment/{{post.key().id()}}/{{c.key().id()}}">Edit</a>
+                    <a href="/blog/editcomme/{{post.key().id()}}/{{c.key().id()}}">Edit</a> |
+                    <a href="/blog/deletecomme/{{post.key().id()}}/{{c.key().id()}}">Delete</a>
                 </div>
             </blockquote>{% endfor %}
         </div>
