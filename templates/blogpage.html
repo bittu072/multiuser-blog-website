@@ -47,7 +47,21 @@
             </form>
         </div>
 
-
+        <div class="row">
+            {% for c in comments %}
+            <br>
+            <hr>
+            <blockquote>
+                <div class="col-md-9">
+                    <p>{{ c.comment }}</p>
+                    <footer>{{ c.getUName() }}</footer>
+                </div>
+                <div class="col-md-3">
+                    <a href="/blog/editcomme/{{post.key().id()}}/{{c.key().id()}}">Edit</a> |
+                    <a href="/blog/deletecomme/{{post.key().id()}}/{{c.key().id()}}">Delete</a>
+                </div>
+            </blockquote>{% endfor %}
+        </div>
 
     </div>
 
