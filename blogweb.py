@@ -226,7 +226,7 @@ class LogIn(Handler):
         u=Userinfo.login(username, password)
         if u:
             self.login(u)
-            self.redirect('/blog')
+            self.redirect('/profile')
         else:
             self.render('login.html',error_username="username does not exist")
 
@@ -243,7 +243,7 @@ class Profile(Handler):
         user_id = self.user.key().id()
         user_name = user_id and Userinfo.by_id(int(user_id))
         if user_name:
-            self.render("profile.html",username=user_id)
+            self.render("profile.html",username=user_name.username)
         else:
             self.redirect('/signup')
 
@@ -251,8 +251,7 @@ class BlogFront(Handler):
     def get(self):
         if self.user:
             posts = db.GqlQuery("select * from Post order by created desc limit 10")
-            deledtedpost_id = self.request.get('deledtedpost_id')
-            self.render('bloghome.html', posts = posts, deleted_id=deledtedpost_id)
+            self.render('bloghome.html', posts = posts)
         else:
             self.redirect('/login')
 
@@ -262,12 +261,12 @@ class BlogAll(Handler):
         self.render('bloghome.html', posts = posts)
 
 class PostPage(Handler):
-    def get(self, post_id):
+    def get(self, postid):
         if self.user:
-            key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+            key = db.Key.from_path('Post', int(postid), parent=blog_key())
             post = db.get(key)
-            comments = db.GqlQuery("select * from Comment where post_id = " +
-                               post_id + " order by created desc")
+            comments = db.GqlQuery("select * from Comment where postid=" +
+                               postid + " order by created desc")
             if not post:
                 self.error(404)
                 return
@@ -275,8 +274,8 @@ class PostPage(Handler):
         else:
             self.redirect('/login')
 
-    def post(self, post_id):
-        key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+    def post(self, postid):
+        key = db.Key.from_path('Post', int(postid), parent=blog_key())
         post = db.get(key)
 
         if not post:
@@ -284,7 +283,6 @@ class PostPage(Handler):
             return
 
         if(self.user):
-            # On clicking like, post-like value increases.
             # if(self.request.get('like') and
             #    self.request.get('like') == "update"):
             #     likes = db.GqlQuery("select * from Like where post_id = " +
@@ -305,11 +303,11 @@ class PostPage(Handler):
             if(self.request.get('comment')):
                 comment=self.request.get('comment')
                 c = Comment(parent=blog_key(), userid=self.user.key().id(),
-                            postid=int(post_id),
+                            postid=int(postid),
                             comment=comment)
                 c.put()
                 # likes = db.GqlQuery("select * from Like where post_id="+post_id)
-                comments = db.GqlQuery("select * from Comment where postid="+ post_id + "order by created desc")
+                comments = db.GqlQuery("select * from Comment where postid="+ postid + "order by created desc")
 
                 self.render("blogpage.html", post=post, comments=comments)
             else:
@@ -339,36 +337,36 @@ class NewPost(Handler):
             self.render("blognew.html", subject=subject, content=content, error=error)
 
 class DeletePost(Handler):
-    def get(self, post_id):
+    def get(self, postid):
         if self.user:
-            key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+            key = db.Key.from_path('Post', int(postid), parent=blog_key())
             post = db.get(key)
             if post.userid == self.user.key().id():
                 post.delete()
-                self.redirect("/blog/?deledtedpost_id="+ post_id)
+                self.redirect("/blog/?deledtedpostid="+ postid)
             else:
-                self.redirect("/blog/" + post_id + "?error=You don't have " +
+                self.redirect("/blog/" + postid + "?error=You don't have " +
                               "access to delete this record.")
         else:
             self.redirect("/login?error=You need to be logged, in order" +
                           " to delete your post!!")
 
 class EditPost(Handler):
-    def get(self, post_id):
+    def get(self, postid):
         if self.user:
-            key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+            key = db.Key.from_path('Post', int(postid), parent=blog_key())
             post = db.get(key)
             if post.userid == self.user.key().id():
                 self.render("blogedit.html", subject=post.subject,
                             content=post.content)
             else:
-                self.redirect("/blog/" + post_id + "?error=You don't have " +
+                self.redirect("/blog/" + postid + "?error=You don't have " +
                               "access to edit this record.")
         else:
             self.redirect("/login?error=You need to be logged, " +
                           "in order to edit your post!!")
 
-    def post(self, post_id):
+    def post(self, postid):
         if not self.user:
             self.redirect('/blog')
 
@@ -376,12 +374,12 @@ class EditPost(Handler):
         content = self.request.get('content')
 
         if subject and content:
-            key = db.Key.from_path('Post', int(post_id), parent=blog_key())
+            key = db.Key.from_path('Post', int(postid), parent=blog_key())
             post = db.get(key)
             post.subject = subject
             post.content = content
             post.put()
-            self.redirect('/blog/%s' % post_id)
+            self.redirect('/blog/%s' % postid)
         else:
             error = "subject & content, both are required!"
             self.render("blogedit.html", subject=subject,
@@ -389,17 +387,17 @@ class EditPost(Handler):
 
 
 class DeleteComment(Handler):
-    def get(self, post_id, comment_id):
+    def get(self, postid, comment_id):
         if self.user:
             key = db.Key.from_path('Comment', int(comment_id),
                                    parent=blog_key())
             c = db.get(key)
             if c.userid == self.user.key().id():
                 c.delete()
-                self.redirect("/blog/"+post_id+"?deleted_comment_id=" +
+                self.redirect("/blog/"+postid+"?deleted_comment_id=" +
                               comment_id)
             else:
-                self.redirect("/blog/" + post_id + "?error=You don't have " +
+                self.redirect("/blog/" + postid + "?error=You don't have " +
                               "access to delete this comment.")
         else:
             self.redirect("/login?error=You need to be logged, in order to " +
@@ -407,7 +405,7 @@ class DeleteComment(Handler):
 
 
 class EditComment(Handler):
-    def get(self, post_id, comment_id):
+    def get(self, postid, comment_id):
         if self.user:
             key = db.Key.from_path('Comment', int(comment_id),
                                    parent=blog_key())
@@ -415,14 +413,14 @@ class EditComment(Handler):
             if c.userid == self.user.key().id():
                 self.render("blogedit.html", comment=c.comment)
             else:
-                self.redirect("/blog/" + post_id +
+                self.redirect("/blog/" + postid +
                               "?error=You don't have access to edit this " +
                               "comment.")
         else:
             self.redirect("/login?error=You need to be logged, in order to" +
                           " edit your post!!")
 
-    def post(self, post_id, comment_id):
+    def post(self, postid, comment_id):
         if not self.user:
             self.redirect('/blog')
 
@@ -434,7 +432,7 @@ class EditComment(Handler):
             comme = db.get(key)
             comme.comment = comment
             comme.put()
-            self.redirect('/blog/%s' % post_id)
+            self.redirect('/blog/%s' % postid)
         else:
             error = "if you are editing then comment can not be blank!"
             self.render("blogedit.html", comment=comment, error=error)
