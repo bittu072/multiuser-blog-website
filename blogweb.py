@@ -265,8 +265,7 @@ class PostPage(Handler):
         if self.user:
             key = db.Key.from_path('Post', int(postid), parent=blog_key())
             post = db.get(key)
-            comments = db.GqlQuery("select * from Comment where postid=" +
-                               postid + " order by created desc")
+            comments = db.GqlQuery("select * from Comment where postid=" +postid + " order by created desc")
             if not post:
                 self.error(404)
                 return
