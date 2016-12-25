@@ -65,7 +65,7 @@ def valid_pw(name, pw, h):
     return h == make_pw_hash(name, pw, salt)
 
 
-def user_key(group = 'default'):
+def users_key(group = 'default'):
     return db.Key.from_path('users', group)
 
 def render_str(template, **params):
@@ -81,7 +81,7 @@ class Userinfo(db.Model):
     # @classmethod is called decorator
     @classmethod
     def by_id(cls, uid):
-        return Userinfo.get_by_id(uid, parent = user_key())
+        return Userinfo.get_by_id(uid, parent = users_key())
 
     @classmethod
     def by_name(cls, username):
@@ -91,7 +91,7 @@ class Userinfo(db.Model):
     @classmethod
     def register(cls, username, password, email =None):
         pw_hash = make_pw_hash(username, password)
-        return Userinfo(parent = user_key(),
+        return Userinfo(parent = users_key(),
                         username = username,
                         password = pw_hash,
                         email = email)
@@ -206,7 +206,7 @@ class SignUp(Handler):
                 uinfo = Userinfo.register(username, password , email)
                 uinfo.put()
 
-                self.login(uinfo)
+                self.login(uinfo.username)
                 self.render('profile.html',username=username)
 
 
@@ -312,7 +312,6 @@ class PostPage(Handler):
             else:
                     self.redirect("/login?error=You need to login before " +
                           "performing edit, like or commenting.!!")
-                    return
 
 
 
