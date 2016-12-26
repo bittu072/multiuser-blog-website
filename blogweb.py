@@ -308,10 +308,10 @@ class PostPage(Handler):
                             postid=int(postid),
                             comment=comment)
                 c.put()
-                likes = db.GqlQuery("select * from Like where postid="+ postid)
-                comments = db.GqlQuery("select * from Comment where postid="+ postid + "order by created desc")
+            likes = db.GqlQuery("select * from Like where postid="+ postid)
+            comments = db.GqlQuery("select * from Comment where postid="+ postid + "order by created desc")
 
-                self.render("blogpage.html", post=post, comments=comments, numlikes=likes.count())
+            self.render("blogpage.html", post=post, comments=comments, numlikes=likes.count())
         else:
             self.redirect("/login?error=You need to login before performing edit, like or commenting.!!")
 
