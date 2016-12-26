@@ -132,6 +132,14 @@ class Comment(db.Model):
         user = Userinfo.by_id(self.userid)
         return user.username
 
+class Like(db.Model):
+    userid = db.IntegerProperty(required=True)
+    postid = db.IntegerProperty(required=True)
+
+    def getUName(self):
+        user = Userinfo.by_id(self.userid)
+        return user.username
+
 
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
@@ -266,10 +274,11 @@ class PostPage(Handler):
             key = db.Key.from_path('Post', int(postid), parent=blog_key())
             post = db.get(key)
             comments = db.GqlQuery("select * from Comment where postid=" +postid + " order by created desc")
+            likes = db.GqlQuery("select * from Like where postid=" +postid)
             if not post:
                 self.error(404)
                 return
-            self.render("blogpage.html", post = post, comments = comments)
+            self.render("blogpage.html", post = post, comments = comments, numlikes = likes.count() )
         else:
             self.redirect('/login')
 
@@ -282,37 +291,29 @@ class PostPage(Handler):
             return
 
         if(self.user):
-            # if(self.request.get('like') and
-            #    self.request.get('like') == "update"):
-            #     likes = db.GqlQuery("select * from Like where post_id = " +
-            #                         post_id + " and userid = " +
-            #                         str(self.user.key().id()))
-            #
-            #     if self.user.key().id() == post.user_id:
-            #         self.redirect("/blog/" + post_id +
-            #                       "?error=You cannot like your " +
-            #                       "post.!!")
-            #         return
-            #     elif likes.count() == 0:
-            #         l = Like(parent=blog_key(), userid=self.user.key().id(),
-            #                  post_id=int(post_id))
-            #         l.put()
+            if(self.request.get('like') and self.request.get('like') == "update"):
+                likes = db.GqlQuery("select * from Like where postid=" + postid + " and userid=" + str(self.user.key().id()))
+                if self.user.key().id() == post.userid:
+                    self.redirect("/blog/" + postid +
+                                  "?error=You cannot like your " +
+                                  "post.!!")
+                elif likes.count() == 0:
+                    l = Like(parent=blog_key(), userid=self.user.key().id(),
+                             postid=int(postid))
+                    l.put()
 
-            # On commenting, it creates new comment tuple
             if(self.request.get('comment')):
                 comment=self.request.get('comment')
                 c = Comment(parent=blog_key(), userid=self.user.key().id(),
                             postid=int(postid),
                             comment=comment)
                 c.put()
-                # likes = db.GqlQuery("select * from Like where post_id="+post_id)
+                likes = db.GqlQuery("select * from Like where postid="+ postid)
                 comments = db.GqlQuery("select * from Comment where postid="+ postid + "order by created desc")
 
-                self.render("blogpage.html", post=post, comments=comments)
-            else:
-                    self.redirect("/login?error=You need to login before " +
-                          "performing edit, like or commenting.!!")
-                    return
+                self.render("blogpage.html", post=post, comments=comments, numlikes=likes.count())
+        else:
+            self.redirect("/login?error=You need to login before performing edit, like or commenting.!!")
 
 
 

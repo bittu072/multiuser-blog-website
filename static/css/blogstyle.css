@@ -40,8 +40,13 @@
     width: 22px;
     border: none;
     cursor: pointer;
+    height: 27px;
 }
 
 .edit-button-margin {
     margin-top: 30px;
+}
+
+.likebutton-margin {
+    margin-top: 20px;
 }
