@@ -6,7 +6,6 @@ from string import letters
 import jinja2
 import webapp2
 import string
-import re
 import random
 
 from google.appengine.ext import db
@@ -15,19 +14,26 @@ import hashlib
 import hmac
 
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
-jinja_env = jinja2.Environment(loader = jinja2.FileSystemLoader(template_dir),
-                               autoescape = True)
+jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
+                               autoescape=True)
 
 
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
+
+
 def valid_username(username):
     return username and USER_RE.match(username)
 
 PASS_RE = re.compile(r"^.{3,20}$")
+
+
 def valid_password(password):
     return password and PASS_RE.match(password)
 
-EMAIL_RE  = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
+
+EMAIL_RE = re.compile(r'^[\S]+@[\S]+\.[\S]+$')
+
+
 def valid_email(email):
     return not email or EMAIL_RE.match(email)
 
@@ -35,18 +41,24 @@ def valid_email(email):
 # SECRET_key = open("/home/bittu/Documents/github/multiuserblog/key/key.txt")
 # SECRET = SECRET_key.read().split()[0]
 SECRET = "thisissecretcode"
+
+
 def hash_str(s):
     return hmac.new(SECRET, s).hexdigest()
+
 
 def make_secure_val(s):
     return "%s|%s" % (s, hash_str(s))
 
+
 def check_secure_val(h):
-    a= h.split("|")[0]
-    if (h==make_secure_val(a)):
+    a = h.split("|")[0]
+    if (h == make_secure_val(a)):
         return a
 
 COOKIE_RE = re.compile(r'.+=;\s*Path=/')
+
+
 def valid_cookie(cookie):
     return cookie and COOKIE_RE.match(cookie)
 
@@ -54,34 +66,40 @@ def valid_cookie(cookie):
 def make_salt():
     return "".join(random.choice(string.letters) for x in xrange(5))
 
+
 def make_pw_hash(name, pw, salt=None):
     if not salt:
         salt = make_salt()
     h = hashlib.sha256(name+pw+salt).hexdigest()
     return "%s,%s" % (h, salt)
 
+
 def valid_pw(name, pw, h):
-    salt=h.split(",")[1]
+    salt = h.split(",")[1]
     return h == make_pw_hash(name, pw, salt)
 
 
-def user_key(group = 'default'):
+def user_key(group='default'):
     return db.Key.from_path('users', group)
+
 
 def render_str(template, **params):
     t = jinja_env.get_template(template)
     return t.render(params)
 
+
 class Userinfo(db.Model):
-    username = db.StringProperty(required = True)
-    password = db.StringProperty(required = True) # not regular password but hash of the password
+    username = db.StringProperty(required=True)
+    password = db.StringProperty(required=True)
+    # not regular password but hash of the password
     email = db.StringProperty()
 
-    # if you want to work on above created class instead of creating instances, we can use this method
+    # if you want to work on above created class instead of creating instances,
+    # we can use this method
     # @classmethod is called decorator
     @classmethod
     def by_id(cls, uid):
-        return Userinfo.get_by_id(uid, parent = user_key())
+        return Userinfo.get_by_id(uid, parent=user_key())
 
     @classmethod
     def by_name(cls, username):
@@ -89,12 +107,12 @@ class Userinfo(db.Model):
         return u
 
     @classmethod
-    def register(cls, username, password, email =None):
+    def register(cls, username, password, email=None):
         pw_hash = make_pw_hash(username, password)
-        return Userinfo(parent = user_key(),
-                        username = username,
-                        password = pw_hash,
-                        email = email)
+        return Userinfo(parent=user_key(),
+                        username=username,
+                        password=pw_hash,
+                        email=email)
 
     @classmethod
     def login(cls, username, password):
@@ -102,15 +120,17 @@ class Userinfo(db.Model):
         if u and valid_pw(username, password, u.password):
             return u
 
-def blog_key(name = 'default'):
+
+def blog_key(name='default'):
     return db.Key.from_path('blogs', name)
+
 
 class Post(db.Model):
     userid = db.IntegerProperty(required=True)
-    subject = db.StringProperty(required = True)
-    content = db.TextProperty(required = True)
-    created = db.DateTimeProperty(auto_now_add = True)
-    last_modified = db.DateTimeProperty(auto_now = True)
+    subject = db.StringProperty(required=True)
+    content = db.TextProperty(required=True)
+    created = db.DateTimeProperty(auto_now_add=True)
+    last_modified = db.DateTimeProperty(auto_now=True)
 
     def render(self):
         self._render_text = self.content.replace('\n', '<br>')
@@ -120,6 +140,7 @@ class Post(db.Model):
     def getUName(self):
         user = Userinfo.by_id(self.userid)
         return user.username
+
 
 class Comment(db.Model):
     userid = db.IntegerProperty(required=True)
@@ -132,6 +153,7 @@ class Comment(db.Model):
         user = Userinfo.by_id(self.userid)
         return user.username
 
+
 class Like(db.Model):
     userid = db.IntegerProperty(required=True)
     postid = db.IntegerProperty(required=True)
@@ -143,7 +165,7 @@ class Like(db.Model):
 
 class Handler(webapp2.RequestHandler):
     def write(self, *a, **kw):
-        self.response.write(*a,**kw)
+        self.response.write(*a, **kw)
 
     def render_str(self, template, **params):
         t = jinja_env.get_template(template)
@@ -166,7 +188,7 @@ class Handler(webapp2.RequestHandler):
     def logout(self):
         self.response.headers.add_header('Set-Cookie', 'user_id=; path=/')
 
-## This methods gets executed for each page and
+# This methods gets executed for each page and
 # verfies user login status, using oookie information.
     def initialize(self, *a, **kw):
         webapp2.RequestHandler.initialize(self, *a, **kw)
