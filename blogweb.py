@@ -229,7 +229,7 @@ class SignUp(Handler):
             have_error = True
 
         if not valid_password(password):
-            params['error_passwordord'] = "wasn't a valid password!!"
+            params['error_password'] = "wasn't a valid password!!"
             have_error = True
         elif (password != verify):
             params['error_verify'] = "Your passwords didn't match!!"
