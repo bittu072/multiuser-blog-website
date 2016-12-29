@@ -117,8 +117,11 @@ class Userinfo(db.Model):
     @classmethod
     def login(cls, username, password):
         u = cls.by_name(username)
-        if u and valid_pw(username, password, u.password):
-            return u
+        if u:
+            if valid_pw(username, password, u.password):
+                return u
+            else:
+                return "wrong password"
 
 
 def blog_key(name='default'):
@@ -176,9 +179,11 @@ class Handler(webapp2.RequestHandler):
 
     def setting_cookies(self, name, val):
         new_cookie_val = make_secure_val(val)
-        self.response.headers.add_header('Set-Cookie', '%s=%s; path=/' % (name, new_cookie_val))
+        self.response.headers.add_header('Set-Cookie',
+                                         '%s=%s; path=/' %
+                                         (name, new_cookie_val))
 
-    def reading_cookies(self,name):
+    def reading_cookies(self, name):
         cookie_val = self.request.cookies.get(name)
         return cookie_val and check_secure_val(cookie_val)
 
@@ -207,8 +212,8 @@ class SignUp(Handler):
         verify = self.request.get('verify')
         email = self.request.get('email')
 
-        params = dict(username = username,
-                      email = email)
+        params = dict(username=username,
+                      email=email)
 
         if not valid_username(username):
             params['error_username'] = "That's not a valid username."
@@ -228,16 +233,17 @@ class SignUp(Handler):
         if have_error:
             self.render('signup.html', **params)
         else:
-            ## add cookies
+            # add cookies
             check_user_exist = Userinfo.by_name(username)
             if check_user_exist:
-                self.render('signup.html', error_username = "That user already exists")
+                self.render('signup.html',
+                            error_username="That user already exists")
             else:
-                uinfo = Userinfo.register(username, password , email)
+                uinfo = Userinfo.register(username, password, email)
                 uinfo.put()
 
                 self.login(uinfo)
-                self.render('profile.html',username=username)
+                self.render('profile.html', username=username)
 
 
 class Front(Handler):
@@ -253,12 +259,15 @@ class LogIn(Handler):
         username = self.request.get('username')
         password = self.request.get('password')
 
-        u=Userinfo.login(username, password)
+        u = Userinfo.login(username, password)
         if u:
-            self.login(u)
-            self.redirect('/profile')
+            if u == "wrong password":
+                self.render('login.html', error_password="wrong password")
+            else:
+                self.login(u)
+                self.redirect('/profile')
         else:
-            self.render('login.html',error_username="username does not exist")
+            self.render('login.html', error_username="username does not exist")
 
 
 class LogOut(Handler):
@@ -269,38 +278,44 @@ class LogOut(Handler):
 
 class Profile(Handler):
     def get(self):
-        #username =
+        # username =
         user_id = self.user.key().id()
         user_name = user_id and Userinfo.by_id(int(user_id))
         if user_name:
-            self.render("profile.html",username=user_name.username)
+            self.render("profile.html", username=user_name.username)
         else:
             self.redirect('/signup')
+
 
 class BlogFront(Handler):
     def get(self):
         if self.user:
-            posts = db.GqlQuery("select * from Post order by created desc limit 10")
-            self.render('bloghome.html', posts = posts)
+            posts = db.GqlQuery("select * from Post order \
+                                by created desc limit 10")
+            self.render('bloghome.html', posts=posts)
         else:
             self.redirect('/login')
+
 
 class BlogAll(Handler):
     def get(self):
         posts = db.GqlQuery("select * from Post order by created desc")
-        self.render('bloghome.html', posts = posts)
+        self.render('bloghome.html', posts=posts)
+
 
 class PostPage(Handler):
     def get(self, postid):
         if self.user:
             key = db.Key.from_path('Post', int(postid), parent=blog_key())
             post = db.get(key)
-            comments = db.GqlQuery("select * from Comment where postid=" +postid + " order by created desc")
-            likes = db.GqlQuery("select * from Like where postid=" +postid)
+            comments = db.GqlQuery("select * from Comment where postid=" +
+                                   postid + " order by created desc")
+            likes = db.GqlQuery("select * from Like where postid=" + postid)
             if not post:
                 self.error(404)
                 return
-            self.render("blogpage.html", post = post, comments = comments, numlikes = likes.count() )
+            self.render("blogpage.html", post=post,
+                        comments=comments, numlikes=likes.count())
         else:
             self.redirect('/login')
 
@@ -313,8 +328,11 @@ class PostPage(Handler):
             return
 
         if(self.user):
-            if(self.request.get('like') and self.request.get('like') == "update"):
-                likes = db.GqlQuery("select * from Like where postid=" + postid + " and userid=" + str(self.user.key().id()))
+            if(self.request.get('like') and
+               self.request.get('like') == "update"):
+                likes = db.GqlQuery("select * from Like where postid=" +
+                                    postid +
+                                    " and userid=" + str(self.user.key().id()))
                 if self.user.key().id() == post.userid:
                     self.redirect("/blog/" + postid +
                                   "?error=You cannot like your " +
@@ -325,18 +343,20 @@ class PostPage(Handler):
                     l.put()
 
             if(self.request.get('comment')):
-                comment=self.request.get('comment')
+                comment = self.request.get('comment')
                 c = Comment(parent=blog_key(), userid=self.user.key().id(),
                             postid=int(postid),
                             comment=comment)
                 c.put()
-            likes = db.GqlQuery("select * from Like where postid="+ postid)
-            comments = db.GqlQuery("select * from Comment where postid="+ postid + "order by created desc")
+            likes = db.GqlQuery("select * from Like where postid=" + postid)
+            comments = db.GqlQuery("select * from Comment where postid=" +
+                                   postid + "order by created desc")
 
-            self.render("blogpage.html", post=post, comments=comments, numlikes=likes.count())
+            self.render("blogpage.html", post=post, comments=comments,
+                        numlikes=likes.count())
         else:
-            self.redirect("/login?error=You need to login before performing edit, like or commenting.!!")
-
+            self.redirect("/login?error=You need to login before performing \
+                          edit, like or commenting.!!")
 
 
 class NewPost(Handler):
@@ -351,12 +371,15 @@ class NewPost(Handler):
         content = self.request.get('content')
 
         if subject and content:
-            p = Post(parent = blog_key(), userid=self.user.key().id(), subject = subject, content = content)
+            p = Post(parent=blog_key(), userid=self.user.key().id(),
+                     subject=subject, content=content)
             p.put()
             self.redirect('/blog/%s' % str(p.key().id()))
         else:
             error = "subject & content, both are required!"
-            self.render("blognew.html", subject=subject, content=content, error=error)
+            self.render("blognew.html", subject=subject,
+                        content=content, error=error)
+
 
 class DeletePost(Handler):
     def get(self, postid):
@@ -365,13 +388,14 @@ class DeletePost(Handler):
             post = db.get(key)
             if post.userid == self.user.key().id():
                 post.delete()
-                self.redirect("/blog/?deledtedpostid="+ postid)
+                self.redirect("/blog/?deledtedpostid=" + postid)
             else:
                 self.redirect("/blog/" + postid + "?error=You don't have " +
                               "access to delete this record.")
         else:
             self.redirect("/login?error=You need to be logged, in order" +
                           " to delete your post!!")
+
 
 class EditPost(Handler):
     def get(self, postid):
@@ -463,7 +487,7 @@ app = webapp2.WSGIApplication([('/?', Front),
                                ('/signup', SignUp),
                                ('/login', LogIn),
                                ('/logout', LogOut),
-                               ('/profile/?',Profile),
+                               ('/profile/?', Profile),
                                ('/blog/?', BlogFront),
                                ('/blogall', BlogAll),
                                ('/blog/([0-9]+)', PostPage),
@@ -478,5 +502,5 @@ app = webapp2.WSGIApplication([('/?', Front),
                               debug=True)
 
 
-## to delete all data from database
-# dev_appserver.py --clear_datastore=yes /home/bittu/Documents/github/Udacity/multiuserblog/project/subproject/
+# to delete all data from database
+# dev_appserver.py --clear_datastore=yes location_of_project
