@@ -1,3 +1,4 @@
+# importing libraries
 import os
 
 import re
@@ -13,11 +14,12 @@ from google.appengine.ext import db
 import hashlib
 import hmac
 
+# this is for importing and using jinja2
 template_dir = os.path.join(os.path.dirname(__file__), 'templates')
 jinja_env = jinja2.Environment(loader=jinja2.FileSystemLoader(template_dir),
                                autoescape=True)
 
-
+# user, password, email validation
 USER_RE = re.compile(r"^[a-zA-Z0-9_-]{3,20}$")
 
 
@@ -40,7 +42,10 @@ def valid_email(email):
 
 # SECRET_key = open("/home/bittu/Documents/github/multiuserblog/key/key.txt")
 # SECRET = SECRET_key.read().split()[0]
+# do not share this. This is open for only learning purposes
 SECRET = "thisissecretcode"
+
+# hashing cookies and password
 
 
 def hash_str(s):
@@ -87,6 +92,8 @@ def render_str(template, **params):
     t = jinja_env.get_template(template)
     return t.render(params)
 
+# database declaration
+
 
 class Userinfo(db.Model):
     username = db.StringProperty(required=True)
@@ -122,6 +129,8 @@ class Userinfo(db.Model):
                 return u
             else:
                 return "wrong password"
+
+# need to read more about this
 
 
 def blog_key(name='default'):
@@ -193,8 +202,8 @@ class Handler(webapp2.RequestHandler):
     def logout(self):
         self.response.headers.add_header('Set-Cookie', 'user_id=; path=/')
 
-# This methods gets executed for each page and
-# verfies user login status, using oookie information.
+    # This methods gets executed for each page and
+    # verfies user login status, using oookie information.
     def initialize(self, *a, **kw):
         webapp2.RequestHandler.initialize(self, *a, **kw)
         uid = self.reading_cookies('user_id')
@@ -216,18 +225,18 @@ class SignUp(Handler):
                       email=email)
 
         if not valid_username(username):
-            params['error_username'] = "That's not a valid username."
+            params['error_username'] = "not a valid username!!"
             have_error = True
 
         if not valid_password(password):
-            params['error_passwordord'] = "That wasn't a valid passwordord."
+            params['error_passwordord'] = "wasn't a valid password!!"
             have_error = True
         elif (password != verify):
-            params['error_verify'] = "Your passwords didn't match."
+            params['error_verify'] = "Your passwords didn't match!!"
             have_error = True
 
         if not valid_email(email):
-            params['error_email'] = "That's not a valid email."
+            params['error_email'] = "not a valid email!!"
             have_error = True
 
         if have_error:
@@ -237,7 +246,7 @@ class SignUp(Handler):
             check_user_exist = Userinfo.by_name(username)
             if check_user_exist:
                 self.render('signup.html',
-                            error_username="That user already exists")
+                            error_username="User already exists, try another")
             else:
                 uinfo = Userinfo.register(username, password, email)
                 uinfo.put()
@@ -253,7 +262,8 @@ class Front(Handler):
 
 class LogIn(Handler):
     def get(self):
-        self.render('login.html')
+        # added error parametere to show error from editpost, deletepost, etc..
+        self.render('login.html', error=self.request.get('error'))
 
     def post(self):
         username = self.request.get('username')
@@ -262,7 +272,7 @@ class LogIn(Handler):
         u = Userinfo.login(username, password)
         if u:
             if u == "wrong password":
-                self.render('login.html', error_password="wrong password")
+                self.render('login.html', error_password="wrong password!!")
             else:
                 self.login(u)
                 self.redirect('/profile')
@@ -292,9 +302,12 @@ class BlogFront(Handler):
         if self.user:
             posts = db.GqlQuery("select * from Post order \
                                 by created desc limit 10")
-            self.render('bloghome.html', posts=posts)
+            self.render('bloghome.html', posts=posts,
+                        deletedpostid=self.request.get('deletedpostid'),
+                        error=self.request.get('error'))
         else:
-            self.redirect('/login')
+            self.redirect('/login?error=login before watching our secret \
+                          million dollar worth post!!!!')
 
 
 class BlogAll(Handler):
@@ -315,9 +328,11 @@ class PostPage(Handler):
                 self.error(404)
                 return
             self.render("blogpage.html", post=post,
-                        comments=comments, numlikes=likes.count())
+                        comments=comments, numlikes=likes.count(),
+                        error=self.request.get('error'))
         else:
-            self.redirect('/login')
+            self.redirect('/login?error=login before watching our secret \
+                          million dollar worth post!!!!')
 
     def post(self, postid):
         key = db.Key.from_path('Post', int(postid), parent=blog_key())
@@ -335,8 +350,8 @@ class PostPage(Handler):
                                     " and userid=" + str(self.user.key().id()))
                 if self.user.key().id() == post.userid:
                     self.redirect("/blog/" + postid +
-                                  "?error=You cannot like your " +
-                                  "post.!!")
+                                  "?error=cannot like your " +
+                                  "own post....sorry.!!")
                 elif likes.count() == 0:
                     l = Like(parent=blog_key(), userid=self.user.key().id(),
                              postid=int(postid))
@@ -355,8 +370,8 @@ class PostPage(Handler):
             self.render("blogpage.html", post=post, comments=comments,
                         numlikes=likes.count())
         else:
-            self.redirect("/login?error=You need to login before performing \
-                          edit, like or commenting.!!")
+            self.redirect("/login?error=login or signup if you want to \
+                          edit, like or comment!!!")
 
 
 class NewPost(Handler):
@@ -388,13 +403,12 @@ class DeletePost(Handler):
             post = db.get(key)
             if post.userid == self.user.key().id():
                 post.delete()
-                self.redirect("/blog/?deledtedpostid=" + postid)
+                self.redirect("/blog/?deletedpostid=" + postid)
             else:
-                self.redirect("/blog/" + postid + "?error=You don't have " +
-                              "access to delete this record.")
+                self.redirect("/blog/" + postid + "?error=You cannot \
+                              delete this record. you didn't create this")
         else:
-            self.redirect("/login?error=You need to be logged, in order" +
-                          " to delete your post!!")
+            self.redirect("/login?error=login before deleting post!!")
 
 
 class EditPost(Handler):
@@ -406,11 +420,10 @@ class EditPost(Handler):
                 self.render("blogedit.html", subject=post.subject,
                             content=post.content)
             else:
-                self.redirect("/blog/" + postid + "?error=You don't have " +
-                              "access to edit this record.")
+                self.redirect("/blog/" + postid + "?error=You cannot \
+                              edit this record. you didn't create this")
         else:
-            self.redirect("/login?error=You need to be logged, " +
-                          "in order to edit your post!!")
+            self.redirect("/login?error=login before editing post!!")
 
     def post(self, postid):
         if not self.user:
@@ -443,11 +456,11 @@ class DeleteComment(Handler):
                 self.redirect("/blog/"+postid+"?deleted_comment_id=" +
                               comment_id)
             else:
-                self.redirect("/blog/" + postid + "?error=You don't have " +
-                              "access to delete this comment.")
+                self.redirect("/blog/" + postid + "?error=You cannot \
+                               delete this comment. add your comment to try \
+                               delete !!  :-)")
         else:
-            self.redirect("/login?error=You need to be logged, in order to " +
-                          "delete your comment!!")
+            self.redirect("/login?error=login before deleting comment!!")
 
 
 class EditComment(Handler):
@@ -460,11 +473,10 @@ class EditComment(Handler):
                 self.render("blogedit.html", comment=c.comment)
             else:
                 self.redirect("/blog/" + postid +
-                              "?error=You don't have access to edit this " +
-                              "comment.")
+                              "?error=You cannot edit this comment. \
+                              add your comment to try edit !!  :-)")
         else:
-            self.redirect("/login?error=You need to be logged, in order to" +
-                          " edit your post!!")
+            self.redirect("/login?error=login before editing comment!!")
 
     def post(self, postid, comment_id):
         if not self.user:
@@ -480,7 +492,7 @@ class EditComment(Handler):
             comme.put()
             self.redirect('/blog/%s' % postid)
         else:
-            error = "if you are editing then comment can not be blank!"
+            error = "while editing then comment can not be blank!"
             self.render("blogedit.html", comment=comment, error=error)
 
 app = webapp2.WSGIApplication([('/?', Front),

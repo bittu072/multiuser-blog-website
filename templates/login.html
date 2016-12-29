@@ -6,7 +6,12 @@
     <br>
     <br>
     <br>
-    <br>
+    <br> {% if error %}
+    <div>
+        <h4 class="text-center" style="color:red"> {{error}} </h4>
+    </div>
+    {% endif %}
+
     <h4>
         <div class="form-signin signup-wrapper">
             <div>

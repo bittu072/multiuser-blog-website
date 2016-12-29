@@ -2,7 +2,11 @@
 
 <div class="container center">
     <div class="blog-container">
-        <br>
+        <br> {% if error %}
+        <div>
+            <h4 class="text-center" style="color:red" name="error" value="error"> {{error}} </h4>
+        </div>
+        {% endif %}
         <br>
         <div class="row">
             <div class="col-md-6">
