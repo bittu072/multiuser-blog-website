@@ -313,7 +313,8 @@ class BlogFront(Handler):
 class BlogAll(Handler):
     def get(self):
         posts = db.GqlQuery("select * from Post order by created desc")
-        self.render('bloghome.html', posts=posts)
+        if self.user:
+            self.render('bloghome.html', posts=posts)
 
 
 class PostPage(Handler):
@@ -385,15 +386,20 @@ class NewPost(Handler):
         subject = self.request.get('subject')
         content = self.request.get('content')
 
-        if subject and content:
-            p = Post(parent=blog_key(), userid=self.user.key().id(),
-                     subject=subject, content=content)
-            p.put()
-            self.redirect('/blog/%s' % str(p.key().id()))
+        if self.user:
+
+            if subject and content:
+                p = Post(parent=blog_key(), userid=self.user.key().id(),
+                         subject=subject, content=content)
+                p.put()
+                self.redirect('/blog/%s' % str(p.key().id()))
+            else:
+                error = "subject & content, both are required!"
+                self.render("blognew.html", subject=subject,
+                            content=content, error=error)
         else:
-            error = "subject & content, both are required!"
-            self.render("blognew.html", subject=subject,
-                        content=content, error=error)
+            self.redirect("/login?error=login or signup if you want to \
+                          edit, like or comment!!!")
 
 
 class DeletePost(Handler):
@@ -412,6 +418,7 @@ class DeletePost(Handler):
 
 
 class EditPost(Handler):
+
     def get(self, postid):
         if self.user:
             key = db.Key.from_path('Post', int(postid), parent=blog_key())
@@ -426,23 +433,28 @@ class EditPost(Handler):
             self.redirect("/login?error=login before editing post!!")
 
     def post(self, postid):
-        if not self.user:
-            self.redirect('/blog')
-
         subject = self.request.get('subject')
         content = self.request.get('content')
+        key = db.Key.from_path('Post', int(postid), parent=blog_key())
+        post = db.get(key)
 
-        if subject and content:
-            key = db.Key.from_path('Post', int(postid), parent=blog_key())
-            post = db.get(key)
-            post.subject = subject
-            post.content = content
-            post.put()
-            self.redirect('/blog/%s' % postid)
+        if self.user:
+            if post.userid == self.user.key().id():
+                if subject and content:
+                    key = db.Key.from_path('Post', int(postid),
+                                           parent=blog_key())
+                    post = db.get(key)
+                    post.subject = subject
+                    post.content = content
+                    post.put()
+                    self.redirect('/blog/%s' % postid)
+                else:
+                    error = "subject & content, both are required!"
+                    self.render("blogedit.html", subject=subject,
+                                content=content, error=error)
         else:
-            error = "subject & content, both are required!"
-            self.render("blogedit.html", subject=subject,
-                        content=content, error=error)
+            self.redirect("/login?error=login or signup if you want to \
+                          edit, like or comment!!!")
 
 
 class DeleteComment(Handler):
@@ -479,21 +491,26 @@ class EditComment(Handler):
             self.redirect("/login?error=login before editing comment!!")
 
     def post(self, postid, comment_id):
-        if not self.user:
-            self.redirect('/blog')
-
         comment = self.request.get('comment')
+        key = db.Key.from_path('Comment', int(comment_id),
+                               parent=blog_key())
+        c = db.get(key)
 
-        if comment:
-            key = db.Key.from_path('Comment',
-                                   int(comment_id), parent=blog_key())
-            comme = db.get(key)
-            comme.comment = comment
-            comme.put()
-            self.redirect('/blog/%s' % postid)
+        if self.user:
+            if c.userid == self.user.key().id():
+                if comment:
+                    key = db.Key.from_path('Comment',
+                                           int(comment_id), parent=blog_key())
+                    comme = db.get(key)
+                    comme.comment = comment
+                    comme.put()
+                    self.redirect('/blog/%s' % postid)
+                else:
+                    error = "while editing then comment can not be blank!"
+                    self.render("blogedit.html", comment=comment, error=error)
         else:
-            error = "while editing then comment can not be blank!"
-            self.render("blogedit.html", comment=comment, error=error)
+            self.redirect("/login?error=login or signup if you want to \
+                          edit, like or comment!!!")
 
 app = webapp2.WSGIApplication([('/?', Front),
                                ('/signup', SignUp),
