@@ -31,6 +31,7 @@ project_Movie_Trailer/
         |-- signup.html
         |-- welcome.html
   |-- app.yaml
+  |-- blogdb.py
   |-- blogweb.py
   |--index.yaml
 ```
@@ -41,7 +42,7 @@ google app engine, python module (os, re, jinja2, webapp2, random, hashlib, hmac
 ### Instruction:
 * Clone or download this repo
 * Install google app engine and add it to your environment path
-* Main file for back-end is blogweb.py so if you want to make changes, edit this file.
+* Main file for back-end is blogweb.py and database defining file is blogdb.py. so if you want to make changes, edit this file.
 * app.yaml has all the app define and describe with static files.
 * Run this web app,
   * To run it locally, 
